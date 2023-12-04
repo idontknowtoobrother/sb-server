@@ -1,3 +1,4 @@
+require('dotenv').config();
 import express from 'express';
 import { createUser, getUserByPhone, getUserByUsername } from '../db/users';
 import { random, authentication } from '../helpers';
@@ -28,7 +29,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         await user.save();
 
 
-        res.cookie('sb-auth', user.authentication.sessionToken, {domain: 'localhost', path: '/'});
+        res.cookie(process.env.COOKIE_NAME || 'sb-auth', user.authentication.sessionToken, {domain: 'localhost', path: '/'});
 
         return res.status(200).json(user).end();
     }catch (error) {
