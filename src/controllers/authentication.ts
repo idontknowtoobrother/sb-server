@@ -47,6 +47,10 @@ export const register = async (req: express.Request, res: express.Response) => {
             return res.sendStatus(400);
         }
 
+        if (password !== confirmPassword) {
+            return res.sendStatus(400);
+        }
+
         const existingUser = await getUserByUsername(username);
         const existingPhone = await getUserByPhone(tel);
         if(existingUser || existingPhone){
