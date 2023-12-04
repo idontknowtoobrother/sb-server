@@ -8,6 +8,7 @@ import compression from 'compression';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
+import router from './router';
 
 const app = express();
 
@@ -30,3 +31,5 @@ server.listen(process.env.SERVER_PORT || 3000, () => {
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGO_URL)
 mongoose.connection.on('error', (error: Error) => console.log(error));
+
+app.use('/', router())

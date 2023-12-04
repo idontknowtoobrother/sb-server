@@ -1,6 +1,41 @@
 import express from 'express';
-import { createUser, getUserByPhone, getUserByUsername } from 'db/users';
-import { random, authentication } from 'helpers';
+import { createUser, getUserByPhone, getUserByUsername } from '../db/users';
+import { random, authentication } from '../helpers';
+
+export const login = async (req: express.Request, res: express.Response) => {
+    try {
+        const { username, password } = req.body;
+        if(!username || !password) {
+            return res.sendStatus(400);
+        }
+
+        const user = await getUserByUsername(username).select('+authentication.salt +authentication.password');
+        if(!user) {
+            return res.sendStatus(400);
+        }
+
+        const expectedHash = authentication(user.authentication.salt, password);
+        if(expectedHash !== user.authentication.password) {
+            return res.sendStatus(400);
+        }
+
+        if(user.authentication.password !== expectedHash) {
+            return res.sendStatus(403);
+        }
+
+        const salt = random();
+        user.authentication.sessionToken = authentication(salt, user._id.toString());
+        await user.save();
+
+
+        res.cookie('sb-auth', user.authentication.sessionToken, {domain: 'localhost', path: '/'});
+
+        return res.status(200).json(user).end();
+    }catch (error) {
+        console.log(error);
+        return res.sendStatus(400);
+    }
+}
 
 
 export const register = async (req: express.Request, res: express.Response) => {
