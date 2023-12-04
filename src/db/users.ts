@@ -16,6 +16,7 @@ export const UserModel = mongoose.model('User', UserSchema);
 
 export const getUsers = () => UserModel.find();
 export const getUserByUsername = (username: string) => UserModel.findOne({ username });
+export const getUserByPhone = (tel: string) => UserModel.findOne({ tel });
 export const getUserBySessionToken = (sessionToken: string) => UserModel.findOne({
     'authentication.sessionToken': sessionToken
 });
