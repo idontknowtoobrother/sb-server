@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
+import Roles from "../enums/roles";
 
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     tel: { type: String, required: true, unique: true },
+    role: { type: String, enum: Object.values(Roles), required: true, default: Roles.USER},
     authentication: {
         password: { type: String, required: true, select: false },
         salt: { type: String, select: false },
