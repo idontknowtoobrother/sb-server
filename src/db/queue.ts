@@ -10,9 +10,9 @@ const QueueSchema = new mongoose.Schema({
 
 export const QueueModel = mongoose.model('Queue', QueueSchema);
 
-export const getQueue = () => QueueModel.find();
+export const getQueues = () => QueueModel.find();
 export const getQueueById = (id: string) => QueueModel.findById(id);
-export const getQueueByUserId = (userId: string) => QueueModel.findOne({ userId });
+export const getQueuesByUserId = (userId: string) => QueueModel.find({ userId });
 export const createQueue = (values: Record<string, any>) => new QueueModel(values)
     .save().then((queue) => queue.toObject());
 export const deleteQueueById = (id: string) => QueueModel.findOneAndDelete({ _id: id });
