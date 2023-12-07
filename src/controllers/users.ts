@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { deleteUserById, getUserById, getUsers } from '../db/users';
+import { deleteUserById, getUserById, getUsers, updateUserById } from '../db/users';
 
 export const getAllUsers = async (req: express.Request, res: express.Response) => {
     try {
@@ -30,21 +30,14 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
         const { id } = req.params;
         const { password, confirmPassword, tel } = req.body;
         
-        if (!password && !confirmPassword && !tel) {
-            return res.sendStatus(400);
-        }
         if ((password && confirmPassword) && password !== confirmPassword) {
             return res.sendStatus(400);
         }
 
-        const user = await getUserById(id);
+        const user = await updateUserById(id, { password, tel });
         if (!user) {
             return res.sendStatus(404);
         }
-
-        user.authentication.password = password;
-        user.tel = tel;   
-        await user.save();
 
         return res.status(200).json(user).end();
     } catch (error) {
