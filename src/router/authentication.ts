@@ -5,5 +5,5 @@ import { login, loginBySessionToken, register } from '../controllers/authenticat
 export default (router: express.Router) => {
     router.post('/auth/register', register)
     router.post('/auth/login', login);
-    router.get('/auth/login-session-token', loginBySessionToken);
+    router.get('/auth/session', loginBySessionToken);
 }
