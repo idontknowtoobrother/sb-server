@@ -1,27 +1,27 @@
 require('dotenv').config();
 import express from 'express';
 import { createUser, getUserByPhone, getUserBySessionToken, getUserByUsername } from '../db/users';
-import { random, authentication } from '../helpers';
+import { random, authentication, getUserResponse } from '../helpers';
 
 export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { username, password } = req.body;
         if(!username || !password) {
-            return res.sendStatus(400);
+            return res.sendStatus(401);
         }
 
         const user = await getUserByUsername(username).select('+authentication.salt +authentication.password');
         if(!user) {
-            return res.sendStatus(400);
+            return res.sendStatus(401);
         }
 
         const expectedHash = authentication(user.authentication.salt, password);
         if(expectedHash !== user.authentication.password) {
-            return res.sendStatus(400);
+            return res.sendStatus(401);
         }
 
         if(user.authentication.password !== expectedHash) {
-            return res.sendStatus(403);
+            return res.sendStatus(401);
         }
 
         const salt = random();
@@ -29,15 +29,12 @@ export const login = async (req: express.Request, res: express.Response) => {
         await user.save();
 
         if (!user.authentication.sessionToken) {
-            return res.sendStatus(400);
+            return res.sendStatus(401);
         }
-        res.cookie(process.env.COOKIE_NAME || 'sb-auth', user.authentication.sessionToken, {domain: 'localhost', path: '/'});
+        res.cookie(process.env.COOKIE_NAME || 'sb-auth', user.authentication.sessionToken, { maxAge: 900000, httpOnly: true });
+        console.log('setted cookie', user.authentication.sessionToken)
+        const responseUser = getUserResponse(user);
 
-        const responseUser = {
-            _id: user._id,
-            username: user.username,
-            tel: user.tel
-        }
         return res.status(200).json(responseUser).end();
     }catch (error) {
         console.log(error);
@@ -57,11 +54,8 @@ export const loginBySessionToken = async (req: express.Request, res: express.Res
             return res.sendStatus(400);
         }
 
-        const responseUser = {
-            _id: user._id,
-            username: user.username,
-            tel: user.tel
-        }
+        const responseUser = getUserResponse(user);
+
         return res.status(200).json(responseUser).end();
     }catch (error) {
         console.log(error);
@@ -73,7 +67,7 @@ export const loginBySessionToken = async (req: express.Request, res: express.Res
 export const register = async (req: express.Request, res: express.Response) => {
     try {
         const { username, password, confirmPassword, tel } = req.body;
-        
+
         if (!username || !password || !confirmPassword || !tel) {
             return res.sendStatus(400);
         }
@@ -98,10 +92,38 @@ export const register = async (req: express.Request, res: express.Response) => {
             }
         })
 
-        return res.status(201).json(user).end();
+        const responseUser = getUserResponse(user);
+
+        return res.status(201).json(responseUser).end();
     }catch (error) {
         console.log(error);
         return res.sendStatus(400);
     }
 
+}
+
+
+export const logout = async (req: express.Request, res: express.Response) => {
+    try {
+        const { sessionToken } = req.cookies;
+        if(!sessionToken) {
+            return res.sendStatus(400);
+        }
+
+        const user = await getUserBySessionToken(sessionToken);
+        if(!user) {
+            return res.sendStatus(400);
+        }
+
+        user.authentication.sessionToken = '';
+        await user.save();
+        // clear cookies
+        res.clearCookie(process.env.COOKIE_NAME || 'sb-auth', {domain: 'localhost', path: '/'});
+
+        return res.sendStatus(200);
+
+    }catch (error) {
+        console.log(error);
+        return res.sendStatus(400);
+    }
 }
