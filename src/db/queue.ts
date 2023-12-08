@@ -16,4 +16,4 @@ export const getQueuesByUserId = (userId: string) => QueueModel.find({ userId })
 export const createQueue = (values: Record<string, any>) => new QueueModel(values)
     .save().then((queue) => queue.toObject());
 export const deleteQueueById = (id: string) => QueueModel.findOneAndDelete({ _id: id });
-export const updateQueueById = (id: string, values: Record<string, any>) => QueueModel.findByIdAndUpdate(id, values);
+export const updateQueueById = (id: string, values: Record<string, any>) => QueueModel.findByIdAndUpdate(id, values, {new: true});
