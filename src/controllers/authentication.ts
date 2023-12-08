@@ -1,6 +1,6 @@
 require('dotenv').config();
 import express from 'express';
-import { createUser, getUserByPhone, getUserByUsername } from '../db/users';
+import { createUser, getUserByPhone, getUserBySessionToken, getUserByUsername } from '../db/users';
 import { random, authentication } from '../helpers';
 
 export const login = async (req: express.Request, res: express.Response) => {
@@ -28,10 +28,41 @@ export const login = async (req: express.Request, res: express.Response) => {
         user.authentication.sessionToken = authentication(salt, user._id.toString());
         await user.save();
 
-
+        if (!user.authentication.sessionToken) {
+            return res.sendStatus(400);
+        }
         res.cookie(process.env.COOKIE_NAME || 'sb-auth', user.authentication.sessionToken, {domain: 'localhost', path: '/'});
 
-        return res.status(200).json(user).end();
+        const responseUser = {
+            _id: user._id,
+            username: user.username,
+            tel: user.tel
+        }
+        return res.status(200).json(responseUser).end();
+    }catch (error) {
+        console.log(error);
+        return res.sendStatus(400);
+    }
+}
+
+export const loginBySessionToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const { sessionToken } = req.cookies;
+        if(!sessionToken) {
+            return res.sendStatus(400);
+        }
+
+        const user = await getUserBySessionToken(sessionToken);
+        if(!user) {
+            return res.sendStatus(400);
+        }
+
+        const responseUser = {
+            _id: user._id,
+            username: user.username,
+            tel: user.tel
+        }
+        return res.status(200).json(responseUser).end();
     }catch (error) {
         console.log(error);
         return res.sendStatus(400);
