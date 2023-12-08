@@ -29,6 +29,7 @@ export const isStaff = async (req: express.Request, res: express.Response, next:
 
 export const isOwner = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
+        
         const { id } = req.params;
         const currentUserId = get(req, 'identity._id') as string;
         if (!currentUserId) {
@@ -49,6 +50,7 @@ export const isOwner = async (req: express.Request, res: express.Response, next:
 
 export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
+
         const sessionToken = req.cookies[process.env.COOKIE_NAME || 'sb-auth'];
         if (!sessionToken) {
             return res.sendStatus(403);
