@@ -15,7 +15,7 @@ export const isStaff = async (req: express.Request, res: express.Response, next:
         if (!currentUser) {
             return res.sendStatus(403);
         }
-        
+
         if (currentUser.role !== Roles.STAFF) {
             return res.sendStatus(403);
         }
@@ -29,7 +29,7 @@ export const isStaff = async (req: express.Request, res: express.Response, next:
 
 export const isOwner = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-        
+
         const { id } = req.params;
         const currentUserId = get(req, 'identity._id') as string;
         if (!currentUserId) {
@@ -50,7 +50,7 @@ export const isOwner = async (req: express.Request, res: express.Response, next:
 
 export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-
+        console.log('isAuthenticated middleware');
         const sessionToken = req.cookies[process.env.COOKIE_NAME || 'sb-auth'];
         if (!sessionToken) {
             return res.sendStatus(403);
@@ -59,23 +59,9 @@ export const isAuthenticated = async (req: express.Request, res: express.Respons
         if (!existingUser) {
             return res.sendStatus(403);
         }
-
+        console.log(existingUser)
         merge(req, { identity: existingUser });
-
         return next();
-    } catch (error) {
-        console.log(error);
-        return res.sendStatus(400);
-    }
-}
-
-export const parseUserId = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-        const currentUserId = get(req, 'identity._id') as string;
-        if (!currentUserId) {
-            return res.sendStatus(403);
-        }
-        return next(currentUserId);
     } catch (error) {
         console.log(error);
         return res.sendStatus(400);

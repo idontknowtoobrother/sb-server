@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-import express from 'express';
+import express, { ErrorRequestHandler } from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -21,6 +21,15 @@ app.use(cors({
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Internal Server Error');
+};
+app.use(errorHandler);
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 
 const server = http.createServer(app);
 

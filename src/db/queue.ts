@@ -5,7 +5,7 @@ const QueueSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     picture: { type: String },
     moreInformation: { type: String },
-    accepted: { type: Boolean, required: true, default: false }
+    accepted: { type: Boolean, default: null }
 })
 
 export const QueueModel = mongoose.model('Queue', QueueSchema);
