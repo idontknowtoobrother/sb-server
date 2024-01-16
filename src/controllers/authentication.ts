@@ -2,7 +2,8 @@ require('dotenv').config();
 import express from 'express';
 import { createUser, getUserByPhone, getUserBySessionToken, getUserByUsername } from '../db/users';
 import { random, authentication, getUserResponse } from '../helpers';
-
+const expiresCookieTime = parseInt(process.env.COOKIE_EXPIRES);
+console.log('expiresCookieTime', expiresCookieTime);
 export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { username, password } = req.body;
@@ -31,7 +32,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         if (!user.authentication.sessionToken) {
             return res.sendStatus(401);
         }
-        res.cookie(process.env.COOKIE_NAME || 'sb-auth', user.authentication.sessionToken, { maxAge: 900000, httpOnly: true });
+        res.cookie(process.env.COOKIE_NAME || 'sb-auth', user.authentication.sessionToken, { maxAge: expiresCookieTime, httpOnly: true });
         console.log('setted cookie', user.authentication.sessionToken)
         const responseUser = getUserResponse(user);
 
